@@ -1,12 +1,12 @@
 import { v4 as uuidv4 } from "uuid";
 
-import { Box, CircularProgress, Container, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
 import { initializeApp } from "firebase/app";
+import { Loading } from "./components/Loading";
 import { VideoForm } from "./components/VideoForm";
-import { YoutubePLayer } from "./components/YoutubePlayer";
+import { YoutubePlayer } from "./components/YoutubePlayer";
 import { firebaseConfig } from "./firebase/firebase-config";
 import { useWatchRoom } from "./hooks/use-watch-room";
-import { Loading } from "./components/Loading";
 
 initializeApp(firebaseConfig);
 
@@ -16,7 +16,7 @@ initializeApp(firebaseConfig);
 const USER_ID = uuidv4();
 
 function App() {
-  const { watchRoom, setYoutubeVideo, setVideoStatus, setVideoTime } =
+  const { watchRoom, setYoutubeVideo, setNewWatchRoom } =
     useWatchRoom();
 
   if (!watchRoom) return <Loading />;
@@ -28,6 +28,10 @@ function App() {
       flexDirection="column"
       justifyContent="center"
       gap="1rem"
+      bgcolor="#8EC5FC"
+      style={{
+        backgroundImage: "linear-gradient(62deg, #8EC5FC 0%, #E0C3FC 100%)",
+      }}
     >
       <Box component="header">
         <Container>
@@ -40,15 +44,19 @@ function App() {
         </Container>
       </Box>
 
-      <Box flexGrow={1} component="main" alignSelf='center'>
+      <Box flexGrow={1} component="main" alignSelf="center">
         <Container>
-          <YoutubePLayer videoId={watchRoom.youtubeVideoID} />
+          <YoutubePlayer
+            watchRoom={watchRoom}
+            userID={USER_ID}
+            setNewWatchRoom={setNewWatchRoom}
+          />
         </Container>
       </Box>
 
       <Box component="footer" padding="1rem 0 2rem">
         <Container>
-          <Typography textAlign='center' variant="body2" component="p">
+          <Typography textAlign="center" variant="body2" component="p">
             Welcome to the Youtube Watch Party. Your ID for this session is{" "}
             {USER_ID}.
           </Typography>

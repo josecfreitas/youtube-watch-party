@@ -1,13 +1,14 @@
 import { getDatabase, onValue, ref, set } from "firebase/database";
 import { useEffect, useState } from "react";
 
-type VideoStatus = "played" | "paused";
+export type VideoStatus = "played" | "paused";
 
 export interface WatchRoom {
   id: string;
   youtubeVideoID?: string;
   videoStatus?: VideoStatus;
   videoTime?: number;
+  updatedUserID?: string;
 }
 
 export function useWatchRoom(id = "public") {
@@ -41,13 +42,9 @@ export function useWatchRoom(id = "public") {
       });
   }
 
-  function setVideoStatus(videoStatus: VideoStatus) {
-    if (watchRoom) save({ ...watchRoom, videoStatus });
+  function setNewWatchRoom(newWatchRoom: Omit<WatchRoom, 'id'>) {
+    if (watchRoom) save({ ...watchRoom, ...newWatchRoom });
   }
 
-  function setVideoTime(videoTime: number) {
-    if (watchRoom) save({ ...watchRoom, videoTime });
-  }
-
-  return { watchRoom, setYoutubeVideo, setVideoStatus, setVideoTime };
+  return { watchRoom, setYoutubeVideo, setNewWatchRoom };
 }
