@@ -2,6 +2,14 @@
 
 Sample application using firebase realtime database and react
 
+## How to run
+
+Recommended node version: 16
+```bash
+npm i
+npm start
+```
+
 ### Functionality
 *The player must be **synced for all users at all times** no matter when they join the party*
 - [x] **Adding/switching** the video. Any “user” should be able to add, remove, or switch a youtube video to the watch party — which is just the main page of the website, i.e `localhost:3000`
