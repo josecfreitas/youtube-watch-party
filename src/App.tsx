@@ -16,7 +16,7 @@ initializeApp(firebaseConfig);
 const USER_ID = uuidv4();
 
 function App() {
-  const { watchRoom, setYoutubeVideo, setNewWatchRoom } =
+  const { watchRoom, setYoutubeVideo, updateVideoStatus, updateVideoTime } =
     useWatchRoom();
 
   if (!watchRoom) return <Loading />;
@@ -38,7 +38,7 @@ function App() {
           <Box margin="2rem 0 1rem">
             <VideoForm
               videoID={watchRoom.youtubeVideoID}
-              setYoutubeVideoID={setYoutubeVideo}
+              setYoutubeVideoID={(videoID) => setYoutubeVideo(videoID, USER_ID)}
             />
           </Box>
         </Container>
@@ -49,7 +49,8 @@ function App() {
           <YoutubePlayer
             watchRoom={watchRoom}
             userID={USER_ID}
-            setNewWatchRoom={setNewWatchRoom}
+            updateVideoStatus={updateVideoStatus}
+            updateVideoTime={updateVideoTime}
           />
         </Container>
       </Box>

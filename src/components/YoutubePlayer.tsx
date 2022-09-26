@@ -2,25 +2,33 @@ import { Typography } from "@mui/material";
 import { useEffect } from "react";
 import { useState } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
-import { WatchRoom } from "../hooks/use-watch-room";
+import { VideoStatus, WatchRoom } from "../hooks/use-watch-room";
 
 interface Props extends YouTubeProps {
   watchRoom: WatchRoom;
   userID: string;
-  setNewWatchRoom: (newWatchRoom: Omit<WatchRoom, "id">) => void;
+  updateVideoStatus: (
+    videoStatus: VideoStatus,
+    videoTime: number,
+    updatedUserID: string
+  ) => void;
+  updateVideoTime: (videoTime: number) => void;
 }
 
 async function sync(player: any, watchRoom: WatchRoom) {
-  if (Math.abs(player.getCurrentTime() - (watchRoom.videoTime || 0)) > 1) {
+  if (Math.abs(player.getCurrentTime() - (watchRoom.videoTime || 0)) > .5) {
     player.seekTo(watchRoom.videoTime);
   }
 
   if (watchRoom.videoStatus === "played") {
-    player.mute();
-    player.playVideo();
-    setTimeout(() => {
-      player.unMute();
-    }, 1000);
+    const playerIsNotPlayed = player.getPlayerState() !== 1;
+    if (playerIsNotPlayed) {
+      player.mute();
+      player.playVideo();
+      setTimeout(() => {
+        player.unMute();
+      }, 1000);
+    }
   } else {
     player.pauseVideo();
   }
@@ -29,19 +37,20 @@ async function sync(player: any, watchRoom: WatchRoom) {
 export function YoutubePlayer({
   watchRoom,
   userID,
-  setNewWatchRoom,
-  ...props
+  updateVideoStatus,
+  updateVideoTime,
 }: Props) {
   const [player, setPlayer] = useState<any>();
-  const [updateCurrentTime, setUpdateCurrentTime] = useState<any>();
+  const [updateCurrentTimeInterval, setUpdateCurrentTimeInterval] =
+    useState<any>();
 
   useEffect(() => {
     console.log(watchRoom);
     if (player && watchRoom.updatedUserID !== userID) {
-      if (updateCurrentTime) clearInterval(updateCurrentTime);
+      if (updateCurrentTimeInterval) clearInterval(updateCurrentTimeInterval);
       sync(player, watchRoom);
     }
-  }, [player, updateCurrentTime, userID, watchRoom]);
+  }, [player, updateCurrentTimeInterval, userID, watchRoom]);
 
   const onPlayerReady: YouTubeProps["onReady"] = (event) => {
     sync(event.target, watchRoom);
@@ -52,21 +61,13 @@ export function YoutubePlayer({
   const handlePlay = () => {
     console.log("handlePlay");
     if (watchRoom.videoStatus !== "played") {
-      setNewWatchRoom({
-        videoStatus: "played",
-        updatedUserID: userID,
-        videoTime: player.getCurrentTime(),
-      });
+      updateVideoStatus("played", player.getCurrentTime(), userID);
 
-      if (updateCurrentTime) clearInterval(updateCurrentTime);
-      setUpdateCurrentTime(
+      if (updateCurrentTimeInterval) clearInterval(updateCurrentTimeInterval);
+      setUpdateCurrentTimeInterval(
         setInterval(() => {
-          setNewWatchRoom({
-            videoStatus: "played",
-            updatedUserID: userID,
-            videoTime: player.getCurrentTime(),
-          });
-        }, 2000)
+          updateVideoTime(player.getCurrentTime());
+        }, 500)
       );
     }
   };
@@ -74,13 +75,9 @@ export function YoutubePlayer({
   const handlePause = () => {
     console.log("handlePause");
     if (watchRoom.videoStatus !== "paused") {
-      setNewWatchRoom({
-        videoStatus: "paused",
-        updatedUserID: userID,
-        videoTime: player.getCurrentTime(),
-      });
+      updateVideoStatus("paused", player.getCurrentTime(), userID);
     }
-    if (updateCurrentTime) clearInterval(updateCurrentTime);
+    if (updateCurrentTimeInterval) clearInterval(updateCurrentTimeInterval);
   };
 
   return watchRoom.youtubeVideoID ? (

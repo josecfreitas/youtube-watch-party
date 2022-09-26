@@ -56,6 +56,7 @@ export function VideoForm({ videoID, setYoutubeVideoID }: Props) {
             onChange={handleURLChange}
             fullWidth
             error={isInvalidYoutubeURL}
+            placeholder='Paste an YouTube URL here'
           />
         </Box>
         <Button type="submit" variant="contained">
