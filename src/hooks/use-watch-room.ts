@@ -1,24 +1,25 @@
 import { getDatabase, onValue, ref, set } from "firebase/database";
 import { useEffect, useState } from "react";
 
-type VideoStatus = "playing" | "stopped";
+type VideoStatus = "played" | "paused";
 
-interface WatchRoom {
+export interface WatchRoom {
   id: string;
   youtubeVideoID?: string;
   videoStatus?: VideoStatus;
   videoTime?: number;
 }
 
-export function useWatchRoom(id?: string) {
-  const [watchRoom, setWatchRoom] = useState<WatchRoom>({ id: id || 'public' });
+export function useWatchRoom(id = "public") {
+  const [watchRoom, setWatchRoom] = useState<WatchRoom>();
 
   useEffect(() => {
-    onValue(getWatchRoomRef(watchRoom.id), (snapshot) => {
+    onValue(getWatchRoomRef(id), (snapshot) => {
       const data = snapshot.val();
       if (data) setWatchRoom(data);
+      else setWatchRoom({ id });
     });
-  }, [watchRoom.id]);
+  }, [id]);
 
   function getWatchRoomRef(id: string) {
     const db = getDatabase();
@@ -27,25 +28,25 @@ export function useWatchRoom(id?: string) {
 
   function save(item: WatchRoom) {
     setWatchRoom(item);
-    set(getWatchRoomRef(watchRoom.id), item);
+    set(getWatchRoomRef(id), item);
   }
 
-  function setYoutubeVideo(youtubeURL: string) {
-    var regExp =
-      /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-    var match = youtubeURL.match(regExp);
-    const youtubeVideoID =
-      match && match[7].length === 11 ? match[7] : undefined;
-
-      save({ ...watchRoom, youtubeVideoID, videoStatus: 'stopped', videoTime: 0 });
+  function setYoutubeVideo(youtubeVideoID: string) {
+    if (watchRoom)
+      save({
+        ...watchRoom,
+        youtubeVideoID,
+        videoStatus: "paused",
+        videoTime: 0,
+      });
   }
 
   function setVideoStatus(videoStatus: VideoStatus) {
-    save({ ...watchRoom, videoStatus });
+    if (watchRoom) save({ ...watchRoom, videoStatus });
   }
 
   function setVideoTime(videoTime: number) {
-    save({ ...watchRoom, videoTime });
+    if (watchRoom) save({ ...watchRoom, videoTime });
   }
 
   return { watchRoom, setYoutubeVideo, setVideoStatus, setVideoTime };
