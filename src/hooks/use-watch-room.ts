@@ -50,8 +50,8 @@ export function useWatchRoom(id = "public") {
     update(getWatchRoomRef(id), updates);
   }
 
-  function updateVideoTime(videoTime: number) {
-    const updates = { videoTime };
+  function updateVideoTime(videoTime: number, updatedUserID: string) {
+    const updates = { videoTime, updatedUserID };
     update(getWatchRoomRef(id), updates);
   }
 

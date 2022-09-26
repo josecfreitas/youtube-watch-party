@@ -12,26 +12,21 @@ interface Props extends YouTubeProps {
     videoTime: number,
     updatedUserID: string
   ) => void;
-  updateVideoTime: (videoTime: number) => void;
+  updateVideoTime: (videoTime: number, updatedUserID: string) => void;
 }
 
-async function sync(player: any, watchRoom: WatchRoom) {
-  if (Math.abs(player.getCurrentTime() - (watchRoom.videoTime || 0)) > .5) {
-    player.seekTo(watchRoom.videoTime);
-  }
+function playerIsPlayed(player: any) {
+  return player?.getPlayerState() === 1;
+}
 
-  if (watchRoom.videoStatus === "played") {
-    const playerIsNotPlayed = player.getPlayerState() !== 1;
-    if (playerIsNotPlayed) {
-      player.mute();
-      player.playVideo();
-      setTimeout(() => {
-        player.unMute();
-      }, 1000);
-    }
-  } else {
-    player.pauseVideo();
-  }
+function timeDifferenceIsGraterThan(
+  player: any,
+  watchRoom: WatchRoom,
+  threshold: number
+) {
+  return (
+    Math.abs(player?.getCurrentTime() - (watchRoom.videoTime || 0)) > threshold
+  );
 }
 
 export function YoutubePlayer({
@@ -41,43 +36,67 @@ export function YoutubePlayer({
   updateVideoTime,
 }: Props) {
   const [player, setPlayer] = useState<any>();
-  const [updateCurrentTimeInterval, setUpdateCurrentTimeInterval] =
-    useState<any>();
 
   useEffect(() => {
-    console.log(watchRoom);
-    if (player && watchRoom.updatedUserID !== userID) {
-      if (updateCurrentTimeInterval) clearInterval(updateCurrentTimeInterval);
-      sync(player, watchRoom);
+    function updateCurrentTime() {
+      if (watchRoom.updatedUserID === userID) {
+        if (player?.getCurrentTime() !== watchRoom.videoTime) {
+          console.log("Updating video time");
+          updateVideoTime(player?.getCurrentTime(), userID);
+        }
+      } else {
+        if (
+          watchRoom.videoStatus === "played" &&
+          playerIsPlayed(player) &&
+          timeDifferenceIsGraterThan(player, watchRoom, 2)
+        ) {
+          console.log("Updating video time");
+          updateVideoTime(player?.getCurrentTime(), userID);
+        }
+      }
     }
-  }, [player, updateCurrentTimeInterval, userID, watchRoom]);
+
+    async function sync(player: any, watchRoom: WatchRoom) {
+      if (timeDifferenceIsGraterThan(player, watchRoom, 1)) {
+        player?.seekTo(watchRoom.videoTime);
+      }
+
+      if (watchRoom.videoStatus === "played") {
+        if (!playerIsPlayed(player)) {
+          player?.mute();
+          player?.playVideo();
+          setTimeout(() => {
+            player?.unMute();
+          }, 1000);
+        }
+      } else {
+        player?.pauseVideo();
+      }
+    }
+
+    const interval = setInterval(() => {
+      updateCurrentTime();
+    }, 500);
+
+    sync(player, watchRoom);
+
+    return () => clearInterval(interval);
+  }, [player, updateVideoTime, userID, watchRoom]);
 
   const onPlayerReady: YouTubeProps["onReady"] = (event) => {
-    sync(event.target, watchRoom);
-
     setPlayer(event.target);
   };
 
   const handlePlay = () => {
-    console.log("handlePlay");
     if (watchRoom.videoStatus !== "played") {
-      updateVideoStatus("played", player.getCurrentTime(), userID);
-
-      if (updateCurrentTimeInterval) clearInterval(updateCurrentTimeInterval);
-      setUpdateCurrentTimeInterval(
-        setInterval(() => {
-          updateVideoTime(player.getCurrentTime());
-        }, 500)
-      );
+      updateVideoStatus("played", player?.getCurrentTime(), userID);
     }
   };
 
   const handlePause = () => {
-    console.log("handlePause");
     if (watchRoom.videoStatus !== "paused") {
-      updateVideoStatus("paused", player.getCurrentTime(), userID);
+      updateVideoStatus("paused", player?.getCurrentTime(), userID);
     }
-    if (updateCurrentTimeInterval) clearInterval(updateCurrentTimeInterval);
   };
 
   return watchRoom.youtubeVideoID ? (
