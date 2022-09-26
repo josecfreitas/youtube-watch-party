@@ -1,15 +1,8 @@
-## Submission Instructions
+# YouTube Watch Party
 
-Once you've finished the take home assignment, please zip your code in a .zip and email it to us. Please include any relevant instructions in this README for how to run the app.
+Sample application using firebase realtime database and react
 
-Also, make sure to check the boxes in the rubric below before you submit the assignment
-
-## Rubric
-Your task is to build a collaborative Youtube player called “Youtube Watch Party” that lets users watch videos together by keeping each client’s youtube player in-sync with each other.
-
-⚠️ It is **very important** that the video stays synced in the **'Late to the party'** case - many people miss this part!
-
-### Required Functionality
+### Functionality
 *The player must be **synced for all users at all times** no matter when they join the party*
 - [ ] **Adding/switching** the video. Any “user” should be able to add, remove, or switch a youtube video to the watch party — which is just the main page of the website, i.e `localhost:3000`
 - [ ] **Playing/pausing** the video. When someone pauses the video, it should pause for everyone. When someone plays the video, it should start playing for everyone.
