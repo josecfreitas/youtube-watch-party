@@ -21,5 +21,5 @@ npm start
 
 ### Bonus Functionality
 - [x] **Videos autoplay**. You’ll notice that browser security prevents videos from auto-playing under certain conditions. So if the video starts playing and I haven’t yet interacted with Nooks it may not autoplay. Can you can make a work-around and build intuitive UX to solve this issue?
-- [ ] **Share sessions via URL**. How can you send someone a link to your watch party? Let’s identify sessions via URL so I can easily send a link to watch videos with my friends
+- [x] **Share sessions via URL**. How can you send someone a link to your watch party? Let’s identify sessions via URL so I can easily send a link to watch videos with my friends
 - [ ] **Who’s watching**. Can we show an indication of who else is in the session? Maybe show a count of active users or maybe even names
